@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 type resetpasswordProps = {};
 
-const Resetpassword: React.FC<resetpasswordProps> = () => {
+const ResetPassword: React.FC<resetpasswordProps> = () => {
   const [email, setEmail] = useState("");
   const handleReset = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,4 +46,4 @@ const Resetpassword: React.FC<resetpasswordProps> = () => {
     </form>
   );
 };
-export default Resetpassword;
+export default ResetPassword;

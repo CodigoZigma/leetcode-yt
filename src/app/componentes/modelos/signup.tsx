@@ -1,10 +1,13 @@
+import { authModalState } from "@/atoms/authAtoms";
 import React from "react";
+import { useSetRecoilState } from "recoil";
 
 type signupProps = {};
 
 const Signup: React.FC<signupProps> = () => {
+  const setAuthModalState = useSetRecoilState(authModalState);
   const handleClick = () => {
-    alert("clic");
+    setAuthModalState((prev) => ({ ...prev, type: "login" }));
   };
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     alert("input");

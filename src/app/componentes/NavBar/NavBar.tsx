@@ -3,12 +3,15 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSetRecoilState } from "recoil";
+import { authModalState } from "@/atoms/authAtoms";
 
 type NavBarProps = {};
 
 const NavBar: React.FC<NavBarProps> = () => {
+  const setAuthModalState = useSetRecoilState(authModalState);
   const handleClick = () => {
-    alert("Hola");
+    setAuthModalState((prev) => ({ ...prev, isOpen: true }));
   };
   return (
     <div className="flex items-center justify-between sm:px-12 px-2 md:px-24">

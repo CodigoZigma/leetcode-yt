@@ -1,12 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import Login from "./login";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { authModalState } from "@/atoms/authAtoms";
+import Signup from "./signup";
+import ResetPassword from "./resetpasword";
 
 type layoutAuthProps = {};
 
 const LayoutAuth: React.FC<layoutAuthProps> = () => {
+  const authModal = useRecoilValue(authModalState);
   const closeModal = useCloseModal();
   return (
     <>
@@ -27,14 +32,13 @@ const LayoutAuth: React.FC<layoutAuthProps> = () => {
                 <IoClose className="h-5 w-5" />
               </button>
             </div>
-            <Login />
-            {/* {authModal.type === "login" ? (
+            {authModal.type === "login" ? (
               <Login />
             ) : authModal.type === "register" ? (
               <Signup />
             ) : (
               <ResetPassword />
-            )} */}
+            )}
           </div>
         </div>
       </div>
@@ -45,8 +49,18 @@ const LayoutAuth: React.FC<layoutAuthProps> = () => {
 export default LayoutAuth;
 
 function useCloseModal() {
+  const setAuthModal = useSetRecoilState(authModalState);
+
   const closeModal = () => {
-    alert("Hola");
+    setAuthModal((prev) => ({ ...prev, isOpen: false, type: "login" }));
   };
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeModal();
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
   return closeModal;
 }
