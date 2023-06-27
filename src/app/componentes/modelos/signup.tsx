@@ -1,6 +1,11 @@
+import { auth, firestore } from "@/firebase/firebase";
 import { authModalState } from "@/atoms/authAtoms";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 type signupProps = {};
 
@@ -9,16 +14,58 @@ const Signup: React.FC<signupProps> = () => {
   const handleClick = () => {
     setAuthModalState((prev) => ({ ...prev, type: "login" }));
   };
+  const [inputs, setInputs] = useState({
+    email: "",
+    displayName: "",
+    password: "",
+  });
+  const router = useRouter();
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth);
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    alert("input");
+    setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("registro");
+    if (!inputs.email || !inputs.password || !inputs.displayName)
+      return alert("Por favor ingresa todos los campos.");
+    try {
+      toast.loading("Creando tu cuenta", {
+        position: "top-center",
+        toastId: "loadingToast",
+      });
+      const newUser = await createUserWithEmailAndPassword(
+        inputs.email,
+        inputs.password
+      );
+      if (!newUser) return;
+      const userData = {
+        uid: newUser.user.uid,
+        email: newUser.user.email,
+        displayName: inputs.displayName,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        likedProblems: [],
+        dislikedProblems: [],
+        solvedProblems: [],
+        starredProblems: [],
+      };
+      await setDoc(doc(firestore, "users", newUser.user.uid), userData);
+      router.push("/");
+    } catch (error: any) {
+      toast.error(error.message, { position: "top-center" });
+    } finally {
+      toast.dismiss("loadingToast");
+    }
   };
+
+  useEffect(() => {
+    if (error) alert(error.message);
+  }, [error]);
+
   return (
     <form className="space-y-6 px-6 pb-4" onSubmit={handleRegister}>
-      <h3 className="text-xl font-medium text-white">Register to LeetClone</h3>
+      <h3 className="text-xl font-medium text-white">Registrate en LeetMath</h3>
       <div>
         <label
           htmlFor="email"
@@ -83,8 +130,7 @@ const Signup: React.FC<signupProps> = () => {
             text-sm px-5 py-2.5 text-center bg-brand-orange hover:bg-brand-orange-s
         "
       >
-        Registrarse
-        {/* {loading ? "Registering..." : "Register"} */}
+        {loading ? "Registrando..." : "Registrarse"}
       </button>
 
       <div className="text-sm font-medium text-gray-300">

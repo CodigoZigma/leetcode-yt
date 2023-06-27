@@ -1,6 +1,10 @@
 import { authModalState } from "@/atoms/authAtoms";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
+import { toast } from "react-toastify";
+import { auth } from "@/firebase/firebase";
 
 type loginProps = {};
 
@@ -9,13 +13,40 @@ const Login: React.FC<loginProps> = () => {
   const handleClick = (type: "login" | "register" | "forgotPassword") => {
     setAuthModalState((prev) => ({ ...prev, type }));
   };
+  const [inputs, setInputs] = useState({ email: "", password: "" });
+  const [signInWithEmailAndPassword, user, loading, error] =
+    useSignInWithEmailAndPassword(auth);
+  const router = useRouter();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    alert("input");
+    setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("login");
+    if (!inputs.email || !inputs.password)
+      return alert("Por favor ingresa todos los campos");
+    try {
+      const newUser = await signInWithEmailAndPassword(
+        inputs.email,
+        inputs.password
+      );
+      if (!newUser) return;
+      router.push("/");
+    } catch (error: any) {
+      toast.error(error.message, {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
+    }
   };
+  useEffect(() => {
+    if (error)
+      toast.error(error.message, {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
+  }, [error]);
   return (
     <form className="space-y-6 px-6 pb-4" onSubmit={handleLogin}>
       <h3 className="text-xl font-medium text-white">Entrar a LeetMath</h3>
@@ -64,8 +95,7 @@ const Login: React.FC<loginProps> = () => {
                 text-sm px-5 py-2.5 text-center bg-brand-orange hover:bg-brand-orange-s
             "
       >
-        Entrar
-        {/* {loading ? "Loading..." : "Log In"} */}
+        {loading ? "cargando..." : "Entrar"}
       </button>
       <button
         className="flex w-full justify-end"
